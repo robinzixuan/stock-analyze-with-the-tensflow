@@ -38,22 +38,18 @@ def sort(df,a):
 
 def get_real(data,data2):
     a=data2['uniqcode'].unique()
-    for i in range(data.shape[0]):
-         b=data[i:i+1]
-         if str(b['uniqcode']) in a:
-             b['real_choose']=1
-         else:
-             b['real_choose']=0
+    for i in  range(a.shape[0]):
+        d=data[data['uniqcode']==a[i]]
+        d['real_choose']=1
+        data[data['uniqcode']==a[i]]=d  
     return data
 
 def get_pred(data,data2):
     a=data2['uniqcode'].unique()
-    for i in range(data.shape[0]):
-         b=data[i:i+1]
-         if str(b['uniqcode']) in a:
-             b['pred_choose']=1
-         else:
-             b['pred_choose']=0
+    for i in  range(a.shape[0]):
+        d=data[data['uniqcode']==a[i]]
+        d['pred_choose']=1
+        data[data['uniqcode']==a[i]]=d  
     return data
 
 def linear(data,data2,data5,during):
@@ -115,7 +111,7 @@ def gradient(data,data2,data5,during):
     X=X.fillna(0)
     X=np.array(X)
     pred1=reg.predict(X)
-    data['pred_ridge']=pred1
+    data['pred_gradient']=pred1
     return data 
 
 def SGD(data,data2,data5,during):
@@ -288,6 +284,8 @@ def handle_data(data,during):
     data['skew']=A.skew(axis=0)
     data['date']=pd.to_datetime(data['date'])
     a=data['date'].unique()
+    data['real_choose']=0
+    data['pred_choose']=0
     for i in range(len(a)):
         C=data[data['date']==a[i]]       
         (df1,df2)=sort(C,['prmom'+during+'_f'])
@@ -318,3 +316,4 @@ data=open_file(file)
 data5=copy.deepcopy(data)
 data2= open_file('data_2.csv')   
 handle_data(data,period)
+data.to_csv('sample.csv')
