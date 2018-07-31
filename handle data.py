@@ -13,7 +13,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn import linear_model
 from sklearn.neural_network import MLPRegressor
-from sklearn.svm import SVC
+from sklearn.svm import SVR
 from sklearn.ensemble import AdaBoostClassifier
 import tensorflow as tf
 from tensorflow import keras
@@ -56,6 +56,67 @@ def get_pred(data,data2):
              b['pred_choose']=0
     return data
 
+def linear(data,data2,data5,during):
+    y = data2['prmom'+during+'_f']
+    x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
+    x=x.fillna(0)
+    y=np.array(y)
+    x=np.array(x)
+    reg = linear_model.LinearRegression()
+    reg.fit(x, y)
+    X= data5.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date','pred'],axis=1)
+    X=X.fillna(0)
+    X=np.array(X)
+    pred1=reg.predict(X)
+    data['pred_linear']=pred1
+    return data
+
+
+def gussian(data,data2,data5,during):
+    y = data2['prmom'+during+'_f']
+    x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
+    x=x.fillna(0)
+    y=np.array(y)
+    x=np.array(x)
+    reg = GaussianProcessRegressor()
+    reg.fit(x, y)
+    X= data5.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date','pred'],axis=1)
+    X=X.fillna(0)
+    X=np.array(X)
+    pred1=reg.predict(X)
+    data['pred_gussian']=pred1
+    return data 
+
+def ridge(data,data2,data5,during):
+    y = data2['prmom'+during+'_f']
+    x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
+    x=x.fillna(0)
+    y=np.array(y)
+    x=np.array(x)
+    reg = linear_model.Ridge (alpha = .5)
+    reg.fit(x, y)
+    X= data5.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date','pred'],axis=1)
+    X=X.fillna(0)
+    X=np.array(X)
+    pred1=reg.predict(X)
+    data['pred_ridge']=pred1
+    return data 
+
+def SGD(data,data2,data5,during):
+    y = data2['prmom'+during+'_f']
+    x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
+    x=x.fillna(0)
+    y=np.array(y)
+    x=np.array(x)
+    reg = linear_model.SGDRegressor()
+    reg.fit(x, y)
+    X= data5.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date','pred'],axis=1)
+    X=X.fillna(0)
+    X=np.array(X)
+    pred1=reg.predict(X)
+    data['pred_SGD']=pred1
+    return data
+
 def BayesianRidge(data,data2,data5,during):
     y = data2['prmom'+during+'_f']
     x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
@@ -90,19 +151,19 @@ def deep_learning(data,data2,data5,during):
     data['pred_deep']=pred1
     return data
 
-def SVC_pre(data,data2,data5,during):
+def SVR_pre(data,data2,data5,during):
     y = data2['prmom'+during+'_f']
     x = data2.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date'],axis=1)
     x=x.fillna(0)
     y=np.array(y)
     x=np.array(x)
-    reg = SVC()
+    reg = SVR()
     reg.fit(x, y)
     X= data5.drop(['prmom1d_f','prmom1w_f','prmom2w_f','prmom3w_f','uniqcode','date','pred'],axis=1)
     X=X.fillna(0)
     X=np.array(X)
     pred1=reg.predict(X)
-    data['pred_svc']=pred1
+    data['pred_svr']=pred1
     return data
 
 def adaboost_pre(data,data2,data5,during):
@@ -222,7 +283,11 @@ def handle_data(data,during):
         data[data['date']==a[i]]=C
     data=BayesianRidge(data,data2,data5,during)
     data=deep_learning(data,data2,data5,during)
-    #data=SVC_pre(data,data2,data5,during)
+    data=linear(data,data2,data5,during)
+    data=gussian(data,data2,data5,during)
+    data=ridge(data,data2,data5,during)
+    data=SGD(data,data2,data5,during)
+    data=SVR_pre(data,data2,data5,during)
     #data=adaboost_pre(data,data2,data5,during)
     data=data_predict_tens(data,data2,data5,during)
     data=data_predict_keras(data,data2,data5,during)
